@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verbindungstest</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<style>
+  :root {
+    box-sizing: border-box;
+    --bg: #FBF9F3;
+    --bg-elevated: #FFFFFF;
+    --ink: #23261F;
+    --ink-soft: #5B5E52;
+    --line: #DEDBCE;
+    --pine: #1F4B3F;
+    --ok: #2E7D4F;
+    --err: #B5533C;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14201B; --bg-elevated: #1B2A23; --ink: #EDEAE0; --ink-soft: #A9AC9E;
+      --line: #2C3B33; --pine: #6FBFA3; --ok: #6FBFA3; --err: #D98F7C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14201B; --bg-elevated: #1B2A23; --ink: #EDEAE0; --ink-soft: #A9AC9E;
+    --line: #2C3B33; --pine: #6FBFA3; --ok: #6FBFA3; --err: #D98F7C;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: -apple-system, "Inter", sans-serif; }
+  #app { max-width: 480px; margin: 0 auto; padding: calc(1.3rem + env(safe-area-inset-top,0px)) 1.1rem 2rem; }
+  h1 { font-size: 1.3rem; margin: 0 0 0.3rem; }
+  .sub { color: var(--ink-soft); font-size: 0.88rem; margin-bottom: 1.2rem; }
+  #status { padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1.1rem; background: var(--bg-elevated); border: 1px solid var(--line); }
+  #status.ok { color: var(--ok); }
+  #status.err { color: var(--err); }
+  .row { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+  input[type=text] { flex: 1; font-size: 1rem; padding: 0.6em 0.7em; border-radius: 8px; border: 1px solid var(--line); background: var(--bg-elevated); color: var(--ink); }
+  button { font-size: 0.92rem; font-weight: 600; padding: 0.6em 1em; border-radius: 8px; border: none; background: var(--pine); color: #FBF9F3; cursor: pointer; }
+  button:disabled { opacity: 0.5; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { border-bottom: 1px solid var(--line); padding: 0.6rem 0.1rem; }
+  li .meta { color: var(--ink-soft); font-size: 0.75rem; margin-top: 0.15rem; }
+  .empty { color: var(--ink-soft); text-align: center; padding: 1.5rem; font-size: 0.9rem; }
+  .refresh { background: transparent; color: var(--pine); border: 1px solid var(--pine); margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>🔌 Verbindungstest</h1>
+  <div class="sub">Testet die Verbindung zu eurer Supabase-Tabelle „verbindungstest".</div>
+  <div id="status">Verbinde …</div>
+
+  <div class="row">
+    <input type="text" id="msgInput" placeholder="Testnachricht eingeben …">
+    <button id="sendBtn">Senden</button>
+  </div>
+
+  <button class="refresh" id="refreshBtn">↻ Jetzt aktualisieren</button>
+
+  <ul id="list"></ul>
+  <div class="empty" id="empty" style="display:none;">Noch keine Einträge. Schreib die erste Testnachricht oben.</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const SUPABASE_URL = "https://nwnxkninkebcypkaeqmr.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53bnhrbmlua2ViY3lwa2FlcW1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4NzU2ODAsImV4cCI6MjEwNjQ1MTY4MH0.tbAvzsHFdPl1e9WYYL0A8MdIHoG9Dkp1RM9K76BgJ4s";
+
+  const { createClient } = supabase;
+  const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const $ = (id) => document.getElementById(id);
+  const statusEl = $("status");
+  const listEl = $("list");
+  const emptyEl = $("empty");
+
+  function setStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = cls || "";
+  }
+
+  function fmtTime(iso) {
+    try {
+      return new Date(iso).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+    } catch (e) { return iso; }
+  }
+
+  async function loadEntries() {
+    const { data, error } = await client
+      .from("verbindungstest")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (error) {
+      setStatus("Fehler beim Lesen: " + error.message, "err");
+      return;
+    }
+    setStatus("✓ Verbunden – Lesen funktioniert.", "ok");
+    emptyEl.style.display = data.length ? "none" : "block";
+    listEl.innerHTML = data.map(row => `
+      <li>
+        <div>${escapeHtml(row.nachricht || "(leer)")}</div>
+        <div class="meta">${row.created_at ? fmtTime(row.created_at) : ""}</div>
+      </li>
+    `).join("");
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+  }
+
+  async function sendMessage() {
+    const input = $("msgInput");
+    const text = input.value.trim();
+    if (!text) return;
+    const btn = $("sendBtn");
+    btn.disabled = true;
+    const { error } = await client.from("verbindungstest").insert({ nachricht: text });
+    btn.disabled = false;
+    if (error) {
+      setStatus("Fehler beim Schreiben: " + error.message, "err");
+      return;
+    }
+    input.value = "";
+    setStatus("✓ Verbunden – Schreiben hat geklappt.", "ok");
+    loadEntries();
+  }
+
+  $("sendBtn").addEventListener("click", sendMessage);
+  $("msgInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendMessage(); });
+  $("refreshBtn").addEventListener("click", loadEntries);
+
+  loadEntries();
+  setInterval(loadEntries, 4000);
+})();
+</script>
+</body>
+</html>
