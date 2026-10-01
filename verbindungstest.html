@@ -94,7 +94,6 @@
     const { data, error } = await client
       .from("verbindungstest")
       .select("*")
-      .order("created_at", { ascending: false })
       .limit(20);
 
     if (error) {
@@ -103,10 +102,9 @@
     }
     setStatus("✓ Verbunden – Lesen funktioniert.", "ok");
     emptyEl.style.display = data.length ? "none" : "block";
-    listEl.innerHTML = data.map(row => `
+    listEl.innerHTML = data.slice().reverse().map(row => `
       <li>
         <div>${escapeHtml(row.nachricht || "(leer)")}</div>
-        <div class="meta">${row.created_at ? fmtTime(row.created_at) : ""}</div>
       </li>
     `).join("");
   }
