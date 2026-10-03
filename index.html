@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
 <style>
   :root {
     box-sizing: border-box;
@@ -43,21 +43,28 @@
   input, textarea, select { font-family: inherit; font-size: 1rem; color: var(--ink); background: var(--bg-elevated); border: 1px solid var(--line); border-radius: var(--radius-s); padding: 0.55em 0.7em; }
   input:focus, textarea:focus, select:focus, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
   textarea { resize: vertical; }
-  #app { max-width: 720px; margin: 0 auto; padding: 1.25rem 1.1rem calc(6.5rem + env(safe-area-inset-bottom, 0px)); min-height: 100%; }
+  #app { max-width: 720px; margin: 0 auto; padding: 0 0 calc(6.5rem + env(safe-area-inset-bottom, 0px)); min-height: 100%; }
+  .view-inner { padding: 0 1.1rem; }
   .hero {
-    position: relative; overflow: hidden; border-radius: 18px;
-    margin-top: env(safe-area-inset-top, 0px); margin-bottom: 1.4rem;
-    padding: 2.6rem 1.3rem 1.3rem;
-    min-height: 118px;
-    display: flex; align-items: flex-end;
-    background-image:
-      linear-gradient(100deg, rgba(15,10,6,0.72) 0%, rgba(15,10,6,0.42) 45%, rgba(15,10,6,0.12) 100%),
-      url("https://images.unsplash.com/photo-1690983322070-22861e13ce47?fm=jpg&q=70&w=1200&auto=format&fit=crop");
+    position: relative; overflow: hidden; border-radius: 0 0 20px 20px;
+    margin-bottom: 1.4rem;
+    padding: calc(2.4rem + env(safe-area-inset-top, 0px)) 1.3rem 1.5rem;
+    min-height: 150px;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    text-align: center;
     background-size: cover;
     background-position: center;
   }
-  .hero h1 { position: relative; color: #FFF7EC; font-size: 1.55rem; letter-spacing: -0.01em; text-shadow: 0 1px 6px rgba(0,0,0,0.35); }
-  .hero .tagline { display: none; }
+  .hero::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(185deg, rgba(15,10,6,0.38) 0%, rgba(15,10,6,0.58) 100%);
+  }
+  .hero .brand { position: relative; font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-style: italic; color: #FFF8EE; font-size: 2rem; letter-spacing: 0.01em; text-shadow: 0 2px 10px rgba(0,0,0,0.35); }
+  .hero .page-name { position: relative; color: #FFF8EE; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.86; margin-top: 0.35rem; }
+  .hero.hero-recipes { background-image: url("https://images.unsplash.com/photo-1690983322070-22861e13ce47?fm=jpg&q=70&w=1200&auto=format&fit=crop"); }
+  .hero.hero-planner { background-image: url("https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?fm=jpg&q=70&w=1200&auto=format&fit=crop"); }
+  .hero.hero-shopping { background-image: url("https://images.unsplash.com/photo-1757627550652-30788bfce978?fm=jpg&q=70&w=1200&auto=format&fit=crop"); }
+  .hero.hero-cook { background-image: url("https://images.unsplash.com/photo-1714890269850-e7621571c36e?fm=jpg&q=70&w=1200&auto=format&fit=crop"); }
   .tabbar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; background: var(--bg-elevated); border-top: 1px solid var(--line); padding: 0.45rem 0.5rem calc(0.45rem + env(safe-area-inset-bottom, 0px)); z-index: 20; }
   .tabbar button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; border: none; background: transparent; color: var(--ink-soft); padding: 0.3rem 0.2rem; cursor: pointer; font-size: 0.68rem; font-weight: 600; }
   .tabbar button.active { color: var(--accent); }
@@ -102,6 +109,21 @@
   .field .hint { font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.3rem; }
   #imagePreviewWrap { margin-top: 0.6rem; }
   #imagePreview { max-width: 100%; max-height: 220px; display: block; border-radius: var(--radius-s); border: 1px solid var(--line); }
+  .gallery-strip { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+  .gallery-thumb { position: relative; width: 72px; height: 72px; border-radius: var(--radius-s); overflow: hidden; border: 1px solid var(--line); }
+  .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .gallery-thumb .remove { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  /* ---------- Cook view ---------- */
+  .cook-section-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin: 1.1rem 0 0.5rem; }
+  .cook-ingredient-list { list-style: none; margin: 0; padding: 0; }
+  .cook-ingredient-list li { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.6rem 0.1rem; border-bottom: 1px solid var(--line); font-size: 1.02rem; cursor: pointer; }
+  .cook-ingredient-list li.done { color: var(--ink-soft); text-decoration: line-through; opacity: 0.6; }
+  .cook-ingredient-list li .dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--accent); flex: 0 0 auto; }
+  .cook-ingredient-list li.done .dot { background: var(--accent); }
+  .cook-steps { font-size: 1.05rem; line-height: 1.65; white-space: pre-wrap; }
+  #cookGallery { display: flex; gap: 0.5rem; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -1.1rem; padding: 0 1.1rem; }
+  #cookGallery img { width: 100%; max-width: 480px; aspect-ratio: 4/3; object-fit: cover; border-radius: 14px; flex: 0 0 auto; scroll-snap-align: start; }
+  #cookPlannedBox:empty, #cookPlannedBox.hide { display: none; }
   dialog { border: none; border-radius: var(--radius-m); padding: 0; background: var(--bg-elevated); color: var(--ink); width: min(560px, 92vw); max-height: 88vh; overflow: hidden auto; }
   dialog::backdrop { background: rgba(0,0,0,0.5); }
   .dialog-inner { padding: 1.25rem; }
@@ -126,41 +148,85 @@
 </head>
 <body>
 <div id="app">
-  <header class="hero">
-    <h1>Easy Kitchen</h1>
-  </header>
-
-  <div id="statusBanner" class="status-banner"></div>
-
   <section class="view active" id="view-recipes">
-    <div class="searchbar"><input type="text" id="searchInput" placeholder="Suche nach Gericht oder Zutat …"></div>
-    <div class="chips" id="categoryFilterChips"></div>
-    <ul class="recipe-list" id="recipeList"></ul>
-    <div class="empty" id="recipeEmpty" style="display:none;">
-      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.3"/></svg>
-      <span>Noch keine Gerichte gefunden.</span>
+    <header class="hero hero-recipes">
+      <div class="brand">Easy Kitchen</div>
+      <div class="page-name">Rezepte</div>
+    </header>
+    <div class="view-inner">
+      <div id="statusBanner" class="status-banner"></div>
+      <div class="searchbar"><input type="text" id="searchInput" placeholder="Suche nach Gericht oder Zutat …"></div>
+      <div class="chips" id="categoryFilterChips"></div>
+      <ul class="recipe-list" id="recipeList"></ul>
+      <div class="empty" id="recipeEmpty" style="display:none;">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.3"/></svg>
+        <span>Noch keine Gerichte gefunden.</span>
+      </div>
     </div>
   </section>
 
   <section class="view" id="view-planner">
-    <h2 style="font-size:1.1rem; margin-bottom:0.6rem;">Kategorien wählen</h2>
-    <div class="chips" id="plannerCategoryChips"></div>
-    <div class="suggestion-box">
-      <div class="hint" id="suggestionHint">Wähl oben eine oder mehrere Kategorien – hier erscheinen passende Gerichte zum Zuweisen.</div>
-      <ul class="recipe-list" id="suggestionList"></ul>
+    <header class="hero hero-planner">
+      <div class="brand">Easy Kitchen</div>
+      <div class="page-name">Wochenplan</div>
+    </header>
+    <div class="view-inner">
+      <h2 style="font-size:1.1rem; margin-bottom:0.6rem;">Kategorien wählen</h2>
+      <div class="chips" id="plannerCategoryChips"></div>
+      <div class="suggestion-box">
+        <div class="hint" id="suggestionHint">Wähl oben eine oder mehrere Kategorien – hier erscheinen passende Gerichte zum Zuweisen.</div>
+        <ul class="recipe-list" id="suggestionList"></ul>
+      </div>
+      <h2 style="font-size:1.1rem; margin-bottom:0.6rem;">Woche</h2>
+      <div id="plannerDays"></div>
+      <div class="row" style="margin-top:1rem;"><button class="btn ghost" id="btnClearWeek">Woche leeren</button></div>
     </div>
-    <h2 style="font-size:1.1rem; margin-bottom:0.6rem;">Woche</h2>
-    <div id="plannerDays"></div>
-    <div class="row" style="margin-top:1rem;"><button class="btn ghost" id="btnClearWeek">Woche leeren</button></div>
   </section>
 
   <section class="view" id="view-shopping">
-    <h2 style="font-size:1.1rem; margin-bottom:0.3rem;">Einkaufsliste</h2>
-    <div class="tagline" style="margin-bottom:1rem;" id="shoppingSubtitle"></div>
-    <div id="shoppingList"></div>
-    <div class="empty" id="shoppingEmpty" style="display:none;">
-      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.4 10.2a2 2 0 0 1-2 1.8H7.4a2 2 0 0 1-2-1.8L4 7Z"/><path d="M8 7V5.5a4 4 0 0 1 8 0V7"/></svg>
-      <span>Plant zuerst ein paar Gerichte in „Plan" ein.</span>
+    <header class="hero hero-shopping">
+      <div class="brand">Easy Kitchen</div>
+      <div class="page-name">Einkaufsliste</div>
+    </header>
+    <div class="view-inner">
+      <div class="tagline" style="margin-bottom:1rem; color:var(--ink-soft); font-size:0.85rem;" id="shoppingSubtitle"></div>
+      <div id="shoppingList"></div>
+      <div class="empty" id="shoppingEmpty" style="display:none;">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.4 10.2a2 2 0 0 1-2 1.8H7.4a2 2 0 0 1-2-1.8L4 7Z"/><path d="M8 7V5.5a4 4 0 0 1 8 0V7"/></svg>
+        <span>Plant zuerst ein paar Gerichte in „Plan" ein.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-cook">
+    <header class="hero hero-cook">
+      <div class="brand">Easy Kitchen</div>
+      <div class="page-name">Kochen</div>
+    </header>
+    <div class="view-inner">
+      <div id="cookPicker">
+        <div class="searchbar"><input type="text" id="cookSearchInput" placeholder="Rezept suchen …"></div>
+        <div id="cookPlannedBox">
+          <h2 style="font-size:1.05rem; margin-bottom:0.6rem;">Heute &amp; diese Woche geplant</h2>
+          <ul class="recipe-list" id="cookPlannedList"></ul>
+        </div>
+        <h2 style="font-size:1.05rem; margin-bottom:0.6rem;">Alle Rezepte</h2>
+        <ul class="recipe-list" id="cookAllList"></ul>
+        <div class="empty" id="cookEmpty" style="display:none;">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.3"/></svg>
+          <span>Nichts gefunden.</span>
+        </div>
+      </div>
+      <div id="cookDetail" style="display:none;">
+        <button class="btn ghost" id="btnCookBack" style="margin-bottom:0.9rem;">← Zurück</button>
+        <div id="cookGallery"></div>
+        <h2 id="cookTitle" style="font-size:1.4rem; margin:1rem 0 0.2rem;"></h2>
+        <div class="cats" id="cookCats" style="display:flex; flex-wrap:wrap; gap:0.3rem; margin-bottom:1.2rem;"></div>
+        <h3 class="cook-section-label">Zutaten</h3>
+        <ul id="cookIngredients" class="cook-ingredient-list"></ul>
+        <h3 class="cook-section-label">Zubereitung</h3>
+        <p id="cookDescription" class="cook-steps"></p>
+      </div>
     </div>
   </section>
 </div>
@@ -181,6 +247,10 @@
   <button data-view="shopping">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.4 10.2a2 2 0 0 1-2 1.8H7.4a2 2 0 0 1-2-1.8L4 7Z"/><path d="M8 7V5.5a4 4 0 0 1 8 0V7"/></svg>
     <span>Einkauf</span>
+  </button>
+  <button data-view="cook">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16M5 12.5a7 7 0 0 1 14 0"/><path d="M4 12.5v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/><path d="M9 6c0-1.2.9-2 .9-3.2M12 6c0-1.2.9-2 .9-3.2"/></svg>
+    <span>Kochen</span>
   </button>
 </nav>
 
@@ -210,12 +280,18 @@
       <textarea id="fDescription" rows="4" placeholder="Kurze Anleitung …"></textarea>
     </div>
     <div class="field">
-      <label for="fImage">Foto (optional)</label>
+      <label for="fImage">Titelbild (optional)</label>
       <input type="file" id="fImage" accept="image/*">
       <div id="imagePreviewWrap" style="display:none;">
         <img id="imagePreview" alt="Vorschau">
         <button type="button" class="btn ghost" id="btnRemoveImage" style="margin-top:0.5rem;">Bild entfernen</button>
       </div>
+    </div>
+    <div class="field">
+      <label for="fGalleryImage">Weitere Fotos (optional, bis zu 4)</label>
+      <input type="file" id="fGalleryImage" accept="image/*">
+      <div class="gallery-strip" id="galleryStrip"></div>
+      <div class="hint">Insgesamt bis zu 5 Fotos pro Rezept (1 Titelbild + 4 weitere)</div>
     </div>
     <div class="dialog-actions">
       <button class="btn danger" id="btnDeleteRecipe" style="display:none;">Löschen</button>
@@ -247,6 +323,8 @@
   let plannerCats = new Set();
   let checkedShopItems = new Set();
   let currentImageData = null;
+  let currentGallery = [];
+  let cookCheckedIngredients = new Set();
 
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -322,6 +400,36 @@
     setImagePreview(null);
   });
 
+  function renderGalleryStrip() {
+    const strip = $("#galleryStrip");
+    strip.innerHTML = currentGallery.map((src, i) => `
+      <div class="gallery-thumb" data-i="${i}">
+        <img src="${src}" alt="">
+        <button type="button" class="remove" data-i="${i}" aria-label="Foto entfernen">✕</button>
+      </div>
+    `).join("");
+    strip.querySelectorAll(".remove").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentGallery.splice(Number(btn.dataset.i), 1);
+        renderGalleryStrip();
+      });
+    });
+  }
+
+  $("#fGalleryImage").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (currentGallery.length >= 4) { showToast("Maximal 4 weitere Fotos möglich"); e.target.value = ""; return; }
+    try {
+      const dataUri = await compressImage(file, 900, 0.72);
+      currentGallery.push(dataUri);
+      renderGalleryStrip();
+    } catch (err) {
+      showToast("Bild konnte nicht gelesen werden");
+    }
+    e.target.value = "";
+  });
+
   // ---------- Tabs ----------
   $$(".tabbar button").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -332,6 +440,7 @@
       $("#btnNewRecipe").style.display = btn.dataset.view === "recipes" ? "flex" : "none";
       if (btn.dataset.view === "shopping") renderShopping();
       if (btn.dataset.view === "planner") renderPlanner();
+      if (btn.dataset.view === "cook") showCookPicker();
     });
   });
 
@@ -393,6 +502,7 @@
     editingId = id || null;
     renderCategoryDatalist();
     $("#fImage").value = "";
+    $("#fGalleryImage").value = "";
     const dlg = $("#recipeDialog");
     if (editingId) {
       const r = recipes.find(x => String(x.id) === String(editingId));
@@ -402,6 +512,8 @@
       $("#fIngredients").value = splitList(r.zutaten).join("\n");
       $("#fDescription").value = r.beschreibung || "";
       setImagePreview(r.bild || null);
+      currentGallery = Array.isArray(r.galerie) ? r.galerie.slice(0, 4) : [];
+      renderGalleryStrip();
       $("#btnDeleteRecipe").style.display = "inline-flex";
     } else {
       $("#dialogTitle").textContent = "Neues Gericht";
@@ -410,6 +522,8 @@
       $("#fIngredients").value = "";
       $("#fDescription").value = "";
       setImagePreview(null);
+      currentGallery = [];
+      renderGalleryStrip();
       $("#btnDeleteRecipe").style.display = "none";
     }
     dlg.showModal();
@@ -425,7 +539,7 @@
     const kategorien = splitList($("#fCategories").value.replace(/\n/g, ";")).join("; ");
     const zutaten = $("#fIngredients").value.split("\n").map(s => s.trim()).filter(Boolean).join("; ");
     const beschreibung = $("#fDescription").value.trim();
-    const data = { name, kategorien, zutaten, beschreibung, bild: currentImageData };
+    const data = { name, kategorien, zutaten, beschreibung, bild: currentImageData, galerie: currentGallery };
 
     const btn = $("#btnSaveRecipe");
     btn.disabled = true;
@@ -577,6 +691,85 @@
     });
   }
 
+  // ---------- Cook ----------
+  function recipeRowHtml(r) {
+    return `
+      <li class="recipe-item" data-id="${r.id}">
+        ${r.bild ? `<img class="thumb" src="${r.bild}" alt="">` : `<div class="thumb placeholder"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3"/></svg></div>`}
+        <div class="body">
+          <div class="name">${escapeHtml(r.name)}</div>
+          <div class="cats">${splitList(r.kategorien).map(c => `<span class="tag">${escapeHtml(c)}</span>`).join("")}</div>
+        </div>
+      </li>
+    `;
+  }
+
+  function showCookPicker() {
+    $("#cookDetail").style.display = "none";
+    $("#cookPicker").style.display = "block";
+    renderCookLists();
+  }
+
+  function renderCookLists() {
+    const query = $("#cookSearchInput").value.trim().toLowerCase();
+
+    const plannedIds = planning.filter(p => p.rezept_id).map(p => p.rezept_id);
+    const plannedRecipes = plannedIds.map(id => recipes.find(r => String(r.id) === String(id))).filter(Boolean);
+    const plannedBox = $("#cookPlannedBox");
+    if (!query && plannedRecipes.length) {
+      plannedBox.classList.remove("hide");
+      $("#cookPlannedList").innerHTML = plannedRecipes.map(recipeRowHtml).join("");
+    } else {
+      plannedBox.classList.add("hide");
+      $("#cookPlannedList").innerHTML = "";
+    }
+
+    const list = recipes
+      .filter(r => !query || (r.name || "").toLowerCase().includes(query) || splitList(r.zutaten).some(i => i.toLowerCase().includes(query)))
+      .sort((a, b) => (a.name || "").localeCompare(b.name || "", "de"));
+    $("#cookAllList").innerHTML = list.map(recipeRowHtml).join("");
+    $("#cookEmpty").style.display = (list.length || (!query && plannedRecipes.length)) ? "none" : "flex";
+
+    $$("#cookPlannedList .recipe-item, #cookAllList .recipe-item").forEach(li => {
+      li.addEventListener("click", () => showCookDetail(li.dataset.id));
+    });
+  }
+  $("#cookSearchInput").addEventListener("input", renderCookLists);
+
+  function showCookDetail(id) {
+    const r = recipes.find(x => String(x.id) === String(id));
+    if (!r) return;
+    cookCheckedIngredients = new Set();
+    $("#cookPicker").style.display = "none";
+    $("#cookDetail").style.display = "block";
+
+    const images = [r.bild, ...(Array.isArray(r.galerie) ? r.galerie : [])].filter(Boolean);
+    $("#cookGallery").innerHTML = images.map(src => `<img src="${src}" alt="">`).join("");
+    $("#cookGallery").style.display = images.length ? "flex" : "none";
+
+    $("#cookTitle").textContent = r.name || "";
+    $("#cookCats").innerHTML = splitList(r.kategorien).map(c => `<span class="tag">${escapeHtml(c)}</span>`).join("");
+    renderCookIngredients(r);
+    $("#cookDescription").textContent = r.beschreibung || "Keine Beschreibung hinterlegt.";
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  function renderCookIngredients(r) {
+    const items = splitList(r.zutaten);
+    $("#cookIngredients").innerHTML = items.map((ing, i) => `
+      <li data-i="${i}" class="${cookCheckedIngredients.has(i) ? "done" : ""}"><span class="dot"></span><span>${escapeHtml(ing)}</span></li>
+    `).join("") || `<li style="cursor:default;">Keine Zutaten hinterlegt.</li>`;
+    $$("#cookIngredients li[data-i]").forEach(li => {
+      li.addEventListener("click", () => {
+        const i = Number(li.dataset.i);
+        if (cookCheckedIngredients.has(i)) cookCheckedIngredients.delete(i); else cookCheckedIngredients.add(i);
+        li.classList.toggle("done");
+      });
+    });
+  }
+
+  $("#btnCookBack").addEventListener("click", showCookPicker);
+
   // ---------- Data loading ----------
   function renderAll() {
     renderCategoryFilterChips();
@@ -584,6 +777,7 @@
     renderCategoryDatalist();
     if ($("#view-planner").classList.contains("active")) renderPlanner();
     if ($("#view-shopping").classList.contains("active")) renderShopping();
+    if ($("#view-cook").classList.contains("active") && $("#cookPicker").style.display !== "none") renderCookLists();
   }
 
   async function loadRecipes() {
