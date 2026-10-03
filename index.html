@@ -3,156 +3,191 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Rezepte & Wochenplan</title>
+<title>Easy Kitchen</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     box-sizing: border-box;
-    --bg: #FBF9F3;
+    --bg: #FFFFFF;
     --bg-elevated: #FFFFFF;
-    --ink: #23261F;
-    --ink-soft: #5B5E52;
-    --line: #DEDBCE;
-    --pine: #1F4B3F;
-    --pine-deep: #163830;
-    --mustard: #D9A441;
-    --clay: #B5533C;
-    --chip-bg: #EFEBDD;
-    --focus: #1F4B3F;
-    --radius-s: 6px;
-    --radius-m: 10px;
+    --ink: #111111;
+    --ink-soft: #6B6B6B;
+    --line: #E6E6E6;
+    --accent: #B5533C;
+    --danger: #C0392B;
+    --chip-bg: #F2F2F2;
+    --focus: #B5533C;
+    --radius-s: 4px;
+    --radius-m: 6px;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #14201B; --bg-elevated: #1B2A23; --ink: #EDEAE0; --ink-soft: #A9AC9E;
-      --line: #2C3B33; --pine: #6FBFA3; --pine-deep: #8FD4BA; --mustard: #E6BE6B;
-      --clay: #D98F7C; --chip-bg: #23342C; --focus: #6FBFA3;
+      --bg: #121212; --bg-elevated: #1A1A1A; --ink: #F2F2F2; --ink-soft: #9A9A9A;
+      --line: #2B2B2B; --accent: #D98F7C; --danger: #E27B6B; --chip-bg: #222222; --focus: #D98F7C;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #14201B; --bg-elevated: #1B2A23; --ink: #EDEAE0; --ink-soft: #A9AC9E;
-    --line: #2C3B33; --pine: #6FBFA3; --pine-deep: #8FD4BA; --mustard: #E6BE6B;
-    --clay: #D98F7C; --chip-bg: #23342C; --focus: #6FBFA3;
+    --bg: #121212; --bg-elevated: #1A1A1A; --ink: #F2F2F2; --ink-soft: #9A9A9A;
+    --line: #2B2B2B; --accent: #D98F7C; --danger: #E27B6B; --chip-bg: #222222; --focus: #D98F7C;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
-  h1, h2, h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  h1, h2, h3 { font-weight: 700; letter-spacing: -0.02em; margin: 0; }
   button { font-family: inherit; }
   input, textarea, select { font-family: inherit; font-size: 1rem; color: var(--ink); background: var(--bg-elevated); border: 1px solid var(--line); border-radius: var(--radius-s); padding: 0.55em 0.7em; }
   input:focus, textarea:focus, select:focus, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
   textarea { resize: vertical; }
-  #app { max-width: 760px; margin: 0 auto; padding: 1.25rem 1.1rem 3rem; min-height: 100%; }
-  header.top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; padding-top: env(safe-area-inset-top, 0px); margin-bottom: 1.1rem; }
-  header.top h1 { font-size: 1.55rem; }
-  header.top .tagline { color: var(--ink-soft); font-size: 0.85rem; margin-top: 0.15rem; }
-  nav.tabs { position: sticky; top: 0; display: flex; gap: 0.3rem; background: var(--bg); padding: 0.35rem; border: 1px solid var(--line); border-radius: var(--radius-m); margin-bottom: 1.4rem; z-index: 5; }
-  nav.tabs button { flex: 1; border: none; background: transparent; color: var(--ink-soft); padding: 0.55rem 0.4rem; border-radius: calc(var(--radius-m) - 3px); cursor: pointer; font-size: 0.92rem; font-weight: 600; transition: background 0.15s ease, color 0.15s ease; }
-  nav.tabs button.active { background: var(--pine); color: #FBF9F3; }
+  #app { max-width: 720px; margin: 0 auto; padding: 1.25rem 1.1rem calc(6.5rem + env(safe-area-inset-bottom, 0px)); min-height: 100%; }
+  .hero {
+    position: relative; overflow: hidden; border-radius: 18px;
+    margin-top: env(safe-area-inset-top, 0px); margin-bottom: 1.4rem;
+    padding: 2.6rem 1.3rem 1.3rem;
+    min-height: 118px;
+    display: flex; align-items: flex-end;
+    background-image:
+      linear-gradient(100deg, rgba(15,10,6,0.72) 0%, rgba(15,10,6,0.42) 45%, rgba(15,10,6,0.12) 100%),
+      url("https://images.unsplash.com/photo-1690983322070-22861e13ce47?fm=jpg&q=70&w=1200&auto=format&fit=crop");
+    background-size: cover;
+    background-position: center;
+  }
+  .hero h1 { position: relative; color: #FFF7EC; font-size: 1.55rem; letter-spacing: -0.01em; text-shadow: 0 1px 6px rgba(0,0,0,0.35); }
+  .hero .tagline { display: none; }
+  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; background: var(--bg-elevated); border-top: 1px solid var(--line); padding: 0.45rem 0.5rem calc(0.45rem + env(safe-area-inset-bottom, 0px)); z-index: 20; }
+  .tabbar button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; border: none; background: transparent; color: var(--ink-soft); padding: 0.3rem 0.2rem; cursor: pointer; font-size: 0.68rem; font-weight: 600; }
+  .tabbar button.active { color: var(--accent); }
+  .fab {
+    position: fixed; right: 1.1rem; bottom: calc(4.6rem + env(safe-area-inset-bottom, 0px));
+    width: 52px; height: 52px; border-radius: 50%; border: none; background: var(--accent); color: #FFFFFF;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.22); z-index: 21;
+  }
+  .fab:active { transform: scale(0.96); }
   section.view { display: none; }
   section.view.active { display: block; }
   .row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
   .searchbar { display: flex; gap: 0.5rem; margin-bottom: 0.9rem; }
   .searchbar input { flex: 1; }
   .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.9rem; }
-  .chip { border: 1px solid var(--line); background: var(--chip-bg); color: var(--ink-soft); padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.85rem; cursor: pointer; user-select: none; transition: all 0.12s ease; }
-  .chip.on { background: var(--pine); border-color: var(--pine); color: #FBF9F3; font-weight: 600; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border: none; border-radius: var(--radius-s); padding: 0.6rem 1rem; font-weight: 600; font-size: 0.92rem; cursor: pointer; background: var(--pine); color: #FBF9F3; }
-  .btn.secondary { background: transparent; color: var(--pine); border: 1px solid var(--pine); }
+  .chip { border: 1px solid var(--line); background: var(--chip-bg); color: var(--ink-soft); padding: 0.32rem 0.72rem; border-radius: 999px; font-size: 0.82rem; cursor: pointer; user-select: none; transition: all 0.12s ease; }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #FFFFFF; font-weight: 600; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border: none; border-radius: var(--radius-s); padding: 0.6rem 1rem; font-weight: 600; font-size: 0.9rem; cursor: pointer; background: var(--accent); color: #FFFFFF; }
+  .btn.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
   .btn.ghost { background: transparent; color: var(--ink-soft); border: 1px solid var(--line); }
-  .btn.danger { background: var(--clay); color: #fff; }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn.danger { background: var(--danger); color: #fff; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-block { width: 100%; }
-  .fab-row { margin-bottom: 1.1rem; }
   ul.recipe-list { list-style: none; margin: 0; padding: 0; }
-  li.recipe-item { border-bottom: 1px solid var(--line); padding: 0.85rem 0.1rem; cursor: pointer; }
-  li.recipe-item:first-child { border-top: 1px solid var(--line); }
-  li.recipe-item .name { font-family: "Fraunces", serif; font-size: 1.08rem; font-weight: 600; }
-  li.recipe-item .meta { color: var(--ink-soft); font-size: 0.83rem; margin-top: 0.2rem; }
+  li.recipe-item {
+    background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px;
+    padding: 0.8rem; margin-bottom: 0.65rem; cursor: pointer; display: flex; gap: 0.8rem; align-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  li.recipe-item .thumb { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; background: var(--chip-bg); flex: 0 0 auto; }
+  li.recipe-item .thumb.placeholder { display: flex; align-items: center; justify-content: center; color: var(--ink-soft); }
+  li.recipe-item .body { flex: 1; min-width: 0; }
+  li.recipe-item .name { font-size: 0.98rem; font-weight: 600; }
+  li.recipe-item .meta { color: var(--ink-soft); font-size: 0.78rem; margin-top: 0.15rem; }
   li.recipe-item .cats { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
-  .tag { background: var(--chip-bg); color: var(--ink-soft); font-size: 0.75rem; padding: 0.15rem 0.55rem; border-radius: 999px; }
-  .empty { color: var(--ink-soft); padding: 2rem 0.5rem; text-align: center; font-size: 0.95rem; }
+  .tag { background: var(--chip-bg); color: var(--ink-soft); font-size: 0.72rem; padding: 0.14rem 0.5rem; border-radius: 999px; }
+  .empty { color: var(--ink-soft); padding: 2.5rem 0.5rem; text-align: center; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+  .empty svg { opacity: 0.5; }
   .field { margin-bottom: 0.9rem; }
-  .field label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 0.3rem; }
+  .field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 0.3rem; }
   .field input, .field textarea, .field select { width: 100%; }
-  .field .hint { font-size: 0.78rem; color: var(--ink-soft); margin-top: 0.3rem; }
+  .field .hint { font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.3rem; }
+  #imagePreviewWrap { margin-top: 0.6rem; }
+  #imagePreview { max-width: 100%; max-height: 220px; display: block; border-radius: var(--radius-s); border: 1px solid var(--line); }
   dialog { border: none; border-radius: var(--radius-m); padding: 0; background: var(--bg-elevated); color: var(--ink); width: min(560px, 92vw); max-height: 88vh; overflow: hidden auto; }
-  dialog::backdrop { background: rgba(20,20,15,0.45); }
+  dialog::backdrop { background: rgba(0,0,0,0.5); }
   .dialog-inner { padding: 1.25rem; }
   .dialog-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
   .dialog-actions { display: flex; justify-content: space-between; gap: 0.6rem; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--line); }
   .planner-day { border: 1px solid var(--line); border-radius: var(--radius-m); padding: 0.85rem; margin-bottom: 0.7rem; }
-  .planner-day .day-label { font-family: "Fraunces", serif; font-weight: 600; margin-bottom: 0.5rem; }
+  .planner-day .day-label { font-weight: 700; margin-bottom: 0.5rem; font-size: 0.92rem; }
   .planner-day select { width: 100%; }
   .suggestion-box { border: 1px dashed var(--line); border-radius: var(--radius-m); padding: 0.9rem; margin: 0.8rem 0 1.2rem; }
   .suggestion-box .hint { color: var(--ink-soft); font-size: 0.85rem; margin-bottom: 0.6rem; }
-  .shop-group { margin-bottom: 1.1rem; }
   .shop-item { display: flex; align-items: baseline; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid var(--line); }
   .shop-item label { display: flex; gap: 0.55rem; align-items: baseline; flex: 1; cursor: pointer; }
   .shop-item input[type=checkbox] { margin-top: 0.2rem; width: 1.05rem; height: 1.05rem; }
   .shop-item.checked label { color: var(--ink-soft); text-decoration: line-through; }
   .shop-amount { color: var(--ink-soft); font-size: 0.85rem; }
-  .toast { position: fixed; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%) translateY(8px); background: var(--pine-deep); color: #FBF9F3; padding: 0.6rem 1.1rem; border-radius: 999px; font-size: 0.85rem; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 50; white-space: nowrap; }
+  .toast { position: fixed; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%) translateY(8px); background: var(--ink); color: var(--bg); padding: 0.6rem 1.1rem; border-radius: 999px; font-size: 0.85rem; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 50; white-space: nowrap; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .status-banner { padding: 0.6rem 0.8rem; border-radius: var(--radius-s); font-size: 0.82rem; margin-bottom: 1rem; background: var(--chip-bg); border: 1px solid var(--line); color: var(--ink-soft); display: none; }
   .status-banner.show { display: block; }
-  .status-banner.err { color: var(--clay); }
+  .status-banner.err { color: var(--danger); }
 </style>
 </head>
 <body>
 <div id="app">
-  <header class="top">
-    <div>
-      <h1>Rezepte &amp; Wochenplan</h1>
-      <div class="tagline">Eure gemeinsame Rezeptsammlung</div>
-    </div>
+  <header class="hero">
+    <h1>Easy Kitchen</h1>
   </header>
 
   <div id="statusBanner" class="status-banner"></div>
 
-  <nav class="tabs">
-    <button data-view="recipes" class="active">Rezepte</button>
-    <button data-view="planner">Wochenplan</button>
-    <button data-view="shopping">Einkaufsliste</button>
-  </nav>
-
   <section class="view active" id="view-recipes">
-    <div class="fab-row"><button class="btn btn-block" id="btnNewRecipe">+ Neues Gericht</button></div>
     <div class="searchbar"><input type="text" id="searchInput" placeholder="Suche nach Gericht oder Zutat …"></div>
     <div class="chips" id="categoryFilterChips"></div>
     <ul class="recipe-list" id="recipeList"></ul>
-    <div class="empty" id="recipeEmpty" style="display:none;">Noch keine Gerichte gefunden.</div>
+    <div class="empty" id="recipeEmpty" style="display:none;">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.3"/></svg>
+      <span>Noch keine Gerichte gefunden.</span>
+    </div>
   </section>
 
   <section class="view" id="view-planner">
-    <h2 style="font-size:1.2rem; margin-bottom:0.6rem;">Kategorien wählen</h2>
+    <h2 style="font-size:1.1rem; margin-bottom:0.6rem;">Kategorien wählen</h2>
     <div class="chips" id="plannerCategoryChips"></div>
     <div class="suggestion-box">
       <div class="hint" id="suggestionHint">Wähl oben eine oder mehrere Kategorien – hier erscheinen passende Gerichte zum Zuweisen.</div>
       <ul class="recipe-list" id="suggestionList"></ul>
     </div>
-    <h2 style="font-size:1.2rem; margin-bottom:0.6rem;">Woche</h2>
+    <h2 style="font-size:1.1rem; margin-bottom:0.6rem;">Woche</h2>
     <div id="plannerDays"></div>
     <div class="row" style="margin-top:1rem;"><button class="btn ghost" id="btnClearWeek">Woche leeren</button></div>
   </section>
 
   <section class="view" id="view-shopping">
-    <h2 style="font-size:1.2rem; margin-bottom:0.3rem;">Einkaufsliste</h2>
+    <h2 style="font-size:1.1rem; margin-bottom:0.3rem;">Einkaufsliste</h2>
     <div class="tagline" style="margin-bottom:1rem;" id="shoppingSubtitle"></div>
     <div id="shoppingList"></div>
-    <div class="empty" id="shoppingEmpty" style="display:none;">Plant zuerst ein paar Gerichte in „Wochenplan" ein.</div>
+    <div class="empty" id="shoppingEmpty" style="display:none;">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.4 10.2a2 2 0 0 1-2 1.8H7.4a2 2 0 0 1-2-1.8L4 7Z"/><path d="M8 7V5.5a4 4 0 0 1 8 0V7"/></svg>
+      <span>Plant zuerst ein paar Gerichte in „Plan" ein.</span>
+    </div>
   </section>
 </div>
+
+<button class="fab" id="btnNewRecipe" aria-label="Neues Gericht hinzufügen">
+  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<nav class="tabbar">
+  <button data-view="recipes" class="active">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h12.5v15H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h12.5"/><path d="M8 7h8M8 10.5h8"/></svg>
+    <span>Rezepte</span>
+  </button>
+  <button data-view="planner">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>
+    <span>Plan</span>
+  </button>
+  <button data-view="shopping">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.4 10.2a2 2 0 0 1-2 1.8H7.4a2 2 0 0 1-2-1.8L4 7Z"/><path d="M8 7V5.5a4 4 0 0 1 8 0V7"/></svg>
+    <span>Einkauf</span>
+  </button>
+</nav>
 
 <dialog id="recipeDialog">
   <div class="dialog-inner">
     <div class="dialog-head">
-      <h2 id="dialogTitle" style="font-size:1.2rem;">Neues Gericht</h2>
+      <h2 id="dialogTitle" style="font-size:1.1rem;">Neues Gericht</h2>
       <button class="btn ghost" id="btnCloseDialog" aria-label="Schließen">✕</button>
     </div>
     <div class="field">
@@ -173,6 +208,14 @@
     <div class="field">
       <label for="fDescription">Beschreibung / Zubereitung</label>
       <textarea id="fDescription" rows="4" placeholder="Kurze Anleitung …"></textarea>
+    </div>
+    <div class="field">
+      <label for="fImage">Foto (optional)</label>
+      <input type="file" id="fImage" accept="image/*">
+      <div id="imagePreviewWrap" style="display:none;">
+        <img id="imagePreview" alt="Vorschau">
+        <button type="button" class="btn ghost" id="btnRemoveImage" style="margin-top:0.5rem;">Bild entfernen</button>
+      </div>
     </div>
     <div class="dialog-actions">
       <button class="btn danger" id="btnDeleteRecipe" style="display:none;">Löschen</button>
@@ -203,6 +246,7 @@
   let activeSearchCats = new Set();
   let plannerCats = new Set();
   let checkedShopItems = new Set();
+  let currentImageData = null;
 
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -214,14 +258,12 @@
     clearTimeout(showToast._h);
     showToast._h = setTimeout(() => t.classList.remove("show"), 1800);
   }
-
   function showStatus(msg, isErr) {
     const b = $("#statusBanner");
     b.textContent = msg;
     b.className = "status-banner show" + (isErr ? " err" : "");
   }
   function hideStatus() { $("#statusBanner").classList.remove("show"); }
-
   function splitList(text) {
     return String(text || "").split(";").map(s => s.trim()).filter(Boolean);
   }
@@ -229,13 +271,65 @@
     return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
   }
 
+  // ---------- Image handling ----------
+  function compressImage(file, maxDim, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) { height = Math.round(height * maxDim / width); width = maxDim; }
+            else { width = Math.round(width * maxDim / height); height = maxDim; }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width; canvas.height = height;
+          canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function setImagePreview(dataUri) {
+    currentImageData = dataUri || null;
+    const wrap = $("#imagePreviewWrap");
+    if (currentImageData) {
+      $("#imagePreview").src = currentImageData;
+      wrap.style.display = "block";
+    } else {
+      wrap.style.display = "none";
+    }
+  }
+
+  $("#fImage").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const dataUri = await compressImage(file, 900, 0.72);
+      setImagePreview(dataUri);
+    } catch (err) {
+      showToast("Bild konnte nicht gelesen werden");
+    }
+  });
+  $("#btnRemoveImage").addEventListener("click", () => {
+    $("#fImage").value = "";
+    setImagePreview(null);
+  });
+
   // ---------- Tabs ----------
-  $$("nav.tabs button").forEach(btn => {
+  $$(".tabbar button").forEach(btn => {
     btn.addEventListener("click", () => {
-      $$("nav.tabs button").forEach(b => b.classList.remove("active"));
+      $$(".tabbar button").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       $$("section.view").forEach(v => v.classList.remove("active"));
       $("#view-" + btn.dataset.view).classList.add("active");
+      $("#btnNewRecipe").style.display = btn.dataset.view === "recipes" ? "flex" : "none";
       if (btn.dataset.view === "shopping") renderShopping();
       if (btn.dataset.view === "planner") renderPlanner();
     });
@@ -281,12 +375,15 @@
     const ul = $("#recipeList");
     ul.innerHTML = list.map(r => `
       <li class="recipe-item" data-id="${r.id}">
-        <div class="name">${escapeHtml(r.name)}</div>
-        <div class="meta">${splitList(r.zutaten).length} Zutaten</div>
-        <div class="cats">${splitList(r.kategorien).map(c => `<span class="tag">${escapeHtml(c)}</span>`).join("")}</div>
+        ${r.bild ? `<img class="thumb" src="${r.bild}" alt="">` : `<div class="thumb placeholder"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3"/></svg></div>`}
+        <div class="body">
+          <div class="name">${escapeHtml(r.name)}</div>
+          <div class="meta">${splitList(r.zutaten).length} Zutaten</div>
+          <div class="cats">${splitList(r.kategorien).map(c => `<span class="tag">${escapeHtml(c)}</span>`).join("")}</div>
+        </div>
       </li>
     `).join("");
-    $("#recipeEmpty").style.display = list.length ? "none" : "block";
+    $("#recipeEmpty").style.display = list.length ? "none" : "flex";
     ul.querySelectorAll(".recipe-item").forEach(li => li.addEventListener("click", () => openDialog(li.dataset.id)));
   }
   $("#searchInput").addEventListener("input", renderRecipeList);
@@ -295,6 +392,7 @@
   function openDialog(id) {
     editingId = id || null;
     renderCategoryDatalist();
+    $("#fImage").value = "";
     const dlg = $("#recipeDialog");
     if (editingId) {
       const r = recipes.find(x => String(x.id) === String(editingId));
@@ -303,6 +401,7 @@
       $("#fCategories").value = r.kategorien || "";
       $("#fIngredients").value = splitList(r.zutaten).join("\n");
       $("#fDescription").value = r.beschreibung || "";
+      setImagePreview(r.bild || null);
       $("#btnDeleteRecipe").style.display = "inline-flex";
     } else {
       $("#dialogTitle").textContent = "Neues Gericht";
@@ -310,6 +409,7 @@
       $("#fCategories").value = "";
       $("#fIngredients").value = "";
       $("#fDescription").value = "";
+      setImagePreview(null);
       $("#btnDeleteRecipe").style.display = "none";
     }
     dlg.showModal();
@@ -325,7 +425,7 @@
     const kategorien = splitList($("#fCategories").value.replace(/\n/g, ";")).join("; ");
     const zutaten = $("#fIngredients").value.split("\n").map(s => s.trim()).filter(Boolean).join("; ");
     const beschreibung = $("#fDescription").value.trim();
-    const data = { name, kategorien, zutaten, beschreibung };
+    const data = { name, kategorien, zutaten, beschreibung, bild: currentImageData };
 
     const btn = $("#btnSaveRecipe");
     btn.disabled = true;
@@ -378,8 +478,11 @@
     hint.textContent = matches.length ? "Klick ein Gericht an, um es einem Tag zuzuweisen:" : "Keine Gerichte in dieser Auswahl gefunden.";
     list.innerHTML = matches.map(r => `
       <li class="recipe-item" data-id="${r.id}" style="cursor:pointer;">
-        <div class="name">${escapeHtml(r.name)}</div>
-        <div class="cats">${splitList(r.kategorien).map(c => `<span class="tag">${escapeHtml(c)}</span>`).join("")}</div>
+        ${r.bild ? `<img class="thumb" src="${r.bild}" alt="">` : `<div class="thumb placeholder"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3"/></svg></div>`}
+        <div class="body">
+          <div class="name">${escapeHtml(r.name)}</div>
+          <div class="cats">${splitList(r.kategorien).map(c => `<span class="tag">${escapeHtml(c)}</span>`).join("")}</div>
+        </div>
       </li>
     `).join("");
     list.querySelectorAll(".recipe-item").forEach(li => li.addEventListener("click", () => assignRecipeToDayPrompt(li.dataset.id)));
@@ -435,37 +538,20 @@
   function renderPlanner() { renderPlannerCategoryChips(); renderSuggestions(); renderPlannerDays(); }
 
   // ---------- Shopping ----------
-  function parseAmount(raw) {
-    const m = String(raw || "").trim().match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/);
-    if (!m) return { qty: null, unit: "", raw: raw || "" };
-    return { qty: parseFloat(m[1].replace(",", ".")), unit: m[2].trim(), raw: raw || "" };
-  }
-
   function buildShoppingList() {
     const used = planning.filter(p => p.rezept_id);
     const byRecipe = used.map(p => recipes.find(r => String(r.id) === String(p.rezept_id))).filter(Boolean);
     const map = new Map();
     byRecipe.forEach(recipe => {
       splitList(recipe.zutaten).forEach(ingText => {
-        const parsed = parseAmount(ingText);
-        const key = (parsed.unit ? parsed.unit : parsed.raw).toLowerCase().replace(/^\d+([.,]\d+)?\s*/, "");
-        const displayKey = key || ingText.toLowerCase();
-        if (!map.has(displayKey)) map.set(displayKey, { label: parsed.unit || ingText, entries: [] });
-        map.get(displayKey).entries.push(parsed);
+        const key = ingText.toLowerCase();
+        if (!map.has(key)) map.set(key, { label: ingText, count: 0 });
+        map.get(key).count += 1;
       });
     });
-    const items = Array.from(map.values()).map(group => {
-      let qtySum = 0, hasQty = false;
-      const freeform = [];
-      group.entries.forEach(e => {
-        if (e.qty !== null) { qtySum += e.qty; hasQty = true; }
-        else freeform.push(e.raw);
-      });
-      const parts = [];
-      if (hasQty) parts.push((Number.isInteger(qtySum) ? qtySum : Math.round(qtySum * 100) / 100));
-      freeform.forEach(f => parts.push(f));
-      return { name: group.label, amount: parts.join(" + ") };
-    }).sort((a, b) => a.name.localeCompare(b.name, "de"));
+    const items = Array.from(map.values())
+      .map(group => ({ name: group.label, amount: group.count > 1 ? (group.count + "×") : "" }))
+      .sort((a, b) => a.name.localeCompare(b.name, "de"));
     return { usedCount: used.length, items };
   }
 
@@ -473,7 +559,7 @@
     const { usedCount, items } = buildShoppingList();
     $("#shoppingSubtitle").textContent = usedCount ? `Für ${usedCount} geplante${usedCount === 1 ? "s" : ""} Gericht${usedCount === 1 ? "" : "e"} diese Woche` : "";
     const wrap = $("#shoppingList");
-    $("#shoppingEmpty").style.display = items.length ? "none" : "block";
+    $("#shoppingEmpty").style.display = items.length ? "none" : "flex";
     wrap.innerHTML = items.map(item => {
       const key = item.name.toLowerCase();
       const checked = checkedShopItems.has(key);
